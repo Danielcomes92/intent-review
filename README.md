@@ -15,7 +15,7 @@ The result opens with what the change is meant to do, shows which acceptance sce
 In Claude Code:
 
 ```
-/plugin marketplace add <owner>/intent-review
+/plugin marketplace add Danielcomes92/intent-review
 /plugin install intent-review@intent-review
 ```
 
