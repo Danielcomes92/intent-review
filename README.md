@@ -98,6 +98,16 @@ Measured against plain `/code-review high` (same model, same scenarios, same gro
 
 The same bugs are found, with roughly half the noise and blocking findings that are far more reliable, at about three times the cost of a plain review. Known gaps: one clean change per set still gets a blocking finding, and a few real bugs land in **review** instead of **block**. The benchmark is synthetic (bugs planted by an LLM in two small fake apps), so absolute numbers are optimistic; the comparison between the two is the useful part. `/intent-spec` has not been benchmarked yet.
 
+## Develop
+
+```sh
+git clone https://github.com/Danielcomes92/intent && cd intent
+claude plugin validate .            # manifest and skills check
+claude --plugin-dir .               # try your local copy in one session
+```
+
+The skills are plain Markdown: `skills/<name>/SKILL.md` holds the workflow, `skills/<name>/references/` the templates and rubrics they load. Keep them project-agnostic: no company, product or person names, no paths.
+
 ## License
 
 MIT
