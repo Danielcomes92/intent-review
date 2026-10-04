@@ -51,9 +51,25 @@ The ticket can come from any tracker you have connected to Claude Code (Jira, Li
 
 Roughly one `/code-review` plus two short agent runs (brief and filter) per review.
 
-## Status
+## Evaluation
 
-Early. An evaluation against a planted-bug benchmark (recall, precision and false blocks compared with plain `/code-review`) is in progress; results will be published here.
+Measured against plain `/code-review high` (same model, same scenarios, same ground truth) on a planted-bug benchmark of React and React Native changes: 24 tickets with acceptance criteria, 67 planted bugs (security, data fetching, hooks, React Native lifecycle, money and time, intent mismatches, architecture), decoys (correct code that looks wrong) and 4 clean changes. Half of the scenarios were used to shape the workflow; the other half was held out and only scored in aggregate.
+
+| | `/code-review` (tuning set) | intent-review (tuning set) | `/code-review` (held out) | intent-review (held out) |
+|---|---|---|---|---|
+| Bugs found (recall) | 100% | 100% | 94% | 94% |
+| Precision of all findings | 31% | **55%** | 25% | **43%** |
+| Precision of blocking findings¹ | 60% | **95%** | 48% | **71%** |
+| Correct code flagged as a bug (decoys) | 14 | **5** | 20 | **9** |
+| Findings matching no known bug | 33 | **8** | 45 | **17** |
+| Clean changes blocked | 2 of 2 | 1 of 2 | 2 of 2 | 1 of 2 |
+| Cost per change (approx.) | $0.32 | $1.10 | $0.33 | $1.15 |
+
+¹ Counting repeated reports of the same bug as correct.
+
+In short: the same bugs are found, with roughly half the noise and blocking findings that are far more reliable, at about three times the cost of a plain review. Known gaps: one clean change per set still gets a blocking finding, and a few real bugs land in **review** instead of **block**.
+
+Caveats: the benchmark is synthetic (bugs planted by an LLM in two small fake apps), so absolute numbers are optimistic; the comparison between the two tools is the useful part.
 
 ## License
 
