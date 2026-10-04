@@ -1,7 +1,7 @@
 {
   "name": "intent-review",
-  "version": "0.1.0",
-  "description": "Code review that knows what the change is for: builds a Gherkin brief from the ticket, runs Claude Code's /code-review with it, and filters the findings down to concrete, evidenced defects.",
+  "version": "0.2.0",
+  "description": "Work on tickets with intent: /intent-spec turns a ticket into Gherkin scenarios, open questions and a definition of done; /intent-review reviews the change against it on top of Claude Code's /code-review, keeping only evidenced findings.",
   "license": "MIT",
   "keywords": [
     "code-review",

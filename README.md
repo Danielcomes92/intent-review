@@ -1,14 +1,31 @@
 # intent-review
 
-Intent-aware code review for [Claude Code](https://claude.com/claude-code), built on top of its own `/code-review`.
+Two Claude Code skills that make work on a ticket precise from start to finish:
 
-`/code-review` is broad and cheap: it finds most real defects in one pass. Its weakness is noise — missing-test remarks, style, hypothetical races, and code that only looks wrong because the reviewer does not know a decision made on purpose. `intent-review` wraps it in two steps:
+- **`/intent-spec`**: when a task arrives, turn its ticket into an agreed spec. The intended behaviour as Gherkin scenarios, the cases the ticket leaves open as questions with a proposed answer, and a definition of done.
+- **`/intent-review`**: before merging, review the change against that spec, on top of Claude Code's own `/code-review`, keeping only concrete, evidenced findings.
 
-1. **Brief.** Before reviewing, it reads the ticket, the pull request, the commits and the project's rules files (`CLAUDE.md`, `AGENTS.md`, `REVIEW.md`) and writes a short brief: the intended behaviour as Gherkin scenarios (each one quoting its source), what is out of scope, and the decisions made on purpose.
-2. **Review.** It runs the built-in `/code-review` with that brief as context.
-3. **Filter.** A fresh, independent agent checks every finding against the code and keeps only concrete, evidenced defects caused by the change, sorted into **block** and **review**. Everything else is dropped and counted.
+Each project keeps what it learns in one file, `.intent/decisions.md`, so questions answered once are not asked again and decisions made on purpose are not reported as bugs.
 
-The result opens with what the change is meant to do, shows which acceptance scenarios are broken, and lists only findings worth acting on.
+Nothing in the plugin is specific to a project: it reads the ticket and its documents through whatever you have connected to Claude Code (Linear, Jira, GitHub or GitLab issues, Notion, Google Docs...) and the project's own rules files.
+
+## The workflow
+
+```
+ticket arrives ──▶ /intent-spec ABC-123        spec + questions (posted to the ticket on your OK)
+                        │
+answers arrive ──▶ /intent-spec ABC-123 --answers   spec updated, decisions proposed for .intent/decisions.md
+                        │
+implement ─────▶ one test per scenario, named after it; done when the "Done when" list is green
+                        │
+before the PR ─▶ /intent-review ABC-123        block / review / dropped, against the spec
+                        │
+PR ────────────▶ paste the "Done when" checklist
+```
+
+**When to use it.** Tasks with behaviour: business rules, roles and permissions, money, dates, states, anything ambiguous. **When not.** Copy and styling changes, dependency bumps, pure refactors (the spec is "existing tests stay green"), one-line bug fixes (the spec is one scenario: the reproduction). `/intent-spec` tells you when a spec is not worth it.
+
+**Rules of thumb.** 3–8 scenarios per task; more means the ticket should be split. Ask only questions whose answer changes the implementation, and always propose the answer, so work continues on the clear parts while you wait. Gherkin is for agreeing on behaviour, not for tooling: write normal tests named after the scenarios, no Cucumber needed.
 
 ## Install
 
@@ -19,37 +36,49 @@ In Claude Code:
 /plugin install intent-review@intent-review
 ```
 
-Or load it from a local clone for one session:
+Or from a terminal: `claude plugin marketplace add Danielcomes92/intent-review && claude plugin install intent-review@intent-review`. To try a local clone for one session: `claude --plugin-dir /path/to/intent-review`.
 
-```sh
-claude --plugin-dir /path/to/intent-review
-```
+## Set up a project (once)
+
+1. Connect the tools where your tickets and specs live (Linear, Jira, GitHub, Notion...) in Claude Code's connectors or MCP settings.
+2. Optionally, tell Claude to use the workflow by adding this to the project's `CLAUDE.md`:
+
+   ```markdown
+   ## Working on tickets
+   - When starting a ticket, run `/intent-spec <ticket>` before writing code; ask its questions before implementing the assumed scenarios.
+   - Write one test per spec scenario, named after it.
+   - Before opening a PR, run `/intent-review <ticket>` and fix or answer every **block** finding.
+   - Project decisions live in `.intent/decisions.md` (only add entries the user approved).
+   ```
+
+3. `.intent/decisions.md` is created by `/intent-spec` the first time an answer is worth keeping. Commit it. Format: [`skills/intent-spec/references/decisions-format.md`](skills/intent-spec/references/decisions-format.md).
 
 ## Use
 
 ```
+/intent-spec ABC-123                    # spec + questions for a ticket
+/intent-spec ABC-123 --post             # ...and post it to the ticket after your OK
+/intent-spec ABC-123 --answers          # questions answered: update spec and decisions
+/intent-spec "free text describing the task"
+
 /intent-review                          # current branch vs the default branch
-/intent-review ABC-123                  # with a ticket (fetched through any connected tracker)
-/intent-review "Customers can pay with saved cards; a declined card shows an error"
+/intent-review ABC-123                  # against the ticket's Intent spec
 /intent-review ABC-123 --target 482     # a pull request
 /intent-review --effort max
 ```
 
-The ticket can come from any tracker you have connected to Claude Code (Jira, Linear, GitHub or GitLab issues). Without one, it uses the PR description and commit messages; with nothing at all, it says so and reviews the diff against your rules files.
+Neither skill writes to the ticket, the PR or the repository without your approval.
 
-**Tip:** write acceptance criteria as Gherkin in the ticket. They are copied verbatim into the brief, so the review judges exactly what you meant.
+## How /intent-review decides
 
-## How it decides
+1. **Brief**: the ticket's Intent spec (or, without one, scenarios inferred from the ticket, PR and commits, each quoting its source), out-of-scope items, and decisions made on purpose (from the spec, the rules files and `.intent/decisions.md`).
+2. **Review**: the built-in `/code-review` runs with that brief as context.
+3. **Filter**: a fresh, independent agent checks every finding against the code and keeps only concrete, evidenced defects caused by the change:
+   - **block**: breaks an acceptance scenario or a project rule, or is a security, data, money/time or core-flow defect;
+   - **review**: real but minor, or needs a human decision;
+   - everything else is dropped and counted. Scenarios that were only *inferred* never produce a blocking finding.
 
-- A finding is kept only with a concrete failure scenario, quoted evidence, and a cause in this change.
-- **block**: breaks an acceptance scenario or a project rule, or is a security, data, money/time or core-flow defect.
-- **review**: real but minor, or needs a human decision.
-- Scenarios the brief only *inferred* from the code never produce a blocking finding.
-- The full rubric is in [`skills/intent-review/references/filter-rubric.md`](skills/intent-review/references/filter-rubric.md).
-
-## Cost
-
-Roughly one `/code-review` plus two short agent runs (brief and filter) per review.
+The full rubric is in [`skills/intent-review/references/filter-rubric.md`](skills/intent-review/references/filter-rubric.md).
 
 ## Evaluation
 
@@ -67,9 +96,7 @@ Measured against plain `/code-review high` (same model, same scenarios, same gro
 
 ¹ Counting repeated reports of the same bug as correct.
 
-In short: the same bugs are found, with roughly half the noise and blocking findings that are far more reliable, at about three times the cost of a plain review. Known gaps: one clean change per set still gets a blocking finding, and a few real bugs land in **review** instead of **block**.
-
-Caveats: the benchmark is synthetic (bugs planted by an LLM in two small fake apps), so absolute numbers are optimistic; the comparison between the two tools is the useful part.
+The same bugs are found, with roughly half the noise and blocking findings that are far more reliable, at about three times the cost of a plain review. Known gaps: one clean change per set still gets a blocking finding, and a few real bugs land in **review** instead of **block**. The benchmark is synthetic (bugs planted by an LLM in two small fake apps), so absolute numbers are optimistic; the comparison between the two is the useful part. `/intent-spec` has not been benchmarked yet.
 
 ## License
 

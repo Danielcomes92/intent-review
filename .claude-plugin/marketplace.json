@@ -7,7 +7,7 @@
     {
       "name": "intent-review",
       "source": "./",
-      "description": "Intent-aware code review on top of Claude Code's /code-review: Gherkin brief before, evidence filter after."
+      "description": "Intent spec before coding, intent-aware review before merging."
     }
   ],
   "description": "Intent-aware code review for Claude Code: a Gherkin brief before /code-review and an evidence filter after it."

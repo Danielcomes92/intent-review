@@ -1,6 +1,6 @@
 # Brief template
 
-Fill it from the ticket, PR, commits and rules files. Quote sources; do not invent.
+If the ticket has an **Intent spec** comment (from `/intent-spec`), use its scenarios, out-of-scope list and "Already decided" entries as they are and only add the rules section. Otherwise fill this from the ticket, PR, commits, rules files and `.intent/decisions.md`. Quote sources; do not invent.
 
 ```markdown
 ## Intent
