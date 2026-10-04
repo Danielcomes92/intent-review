@@ -1,0 +1,11 @@
+{
+  "name": "intent-review",
+  "owner": { "name": "intent-review contributors" },
+  "plugins": [
+    {
+      "name": "intent-review",
+      "source": "./",
+      "description": "Intent-aware code review on top of Claude Code's /code-review: Gherkin brief before, evidence filter after."
+    }
+  ]
+}
