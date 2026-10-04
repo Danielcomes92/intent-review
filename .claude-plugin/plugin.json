@@ -1,6 +1,6 @@
 {
-  "name": "intent-review",
-  "version": "0.2.0",
+  "name": "intent",
+  "version": "0.3.0",
   "description": "Work on tickets with intent: /intent-spec turns a ticket into Gherkin scenarios, open questions and a definition of done; /intent-review reviews the change against it on top of Claude Code's /code-review, keeping only evidenced findings.",
   "license": "MIT",
   "keywords": [

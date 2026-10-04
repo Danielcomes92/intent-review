@@ -1,4 +1,4 @@
-# intent-review
+# intent
 
 Two Claude Code skills that make work on a ticket precise from start to finish:
 
@@ -32,11 +32,11 @@ PR ────────────▶ paste the "Done when" checklist
 In Claude Code:
 
 ```
-/plugin marketplace add Danielcomes92/intent-review
-/plugin install intent-review@intent-review
+/plugin marketplace add Danielcomes92/intent
+/plugin install intent@intent
 ```
 
-Or from a terminal: `claude plugin marketplace add Danielcomes92/intent-review && claude plugin install intent-review@intent-review`. To try a local clone for one session: `claude --plugin-dir /path/to/intent-review`.
+Or from a terminal: `claude plugin marketplace add Danielcomes92/intent && claude plugin install intent@intent`. To try a local clone for one session: `claude --plugin-dir /path/to/intent`.
 
 ## Set up a project (once)
 
@@ -84,7 +84,7 @@ The full rubric is in [`skills/intent-review/references/filter-rubric.md`](skill
 
 Measured against plain `/code-review high` (same model, same scenarios, same ground truth) on a planted-bug benchmark of React and React Native changes: 24 tickets with acceptance criteria, 67 planted bugs (security, data fetching, hooks, React Native lifecycle, money and time, intent mismatches, architecture), decoys (correct code that looks wrong) and 4 clean changes. Half of the scenarios were used to shape the workflow; the other half was held out and only scored in aggregate.
 
-| | `/code-review` (tuning set) | intent-review (tuning set) | `/code-review` (held out) | intent-review (held out) |
+| | `/code-review` (tuning set) | `/intent-review` (tuning set) | `/code-review` (held out) | `/intent-review` (held out) |
 |---|---|---|---|---|
 | Bugs found (recall) | 100% | 100% | 94% | 94% |
 | Precision of all findings | 31% | **55%** | 25% | **43%** |

@@ -1,11 +1,11 @@
 {
-  "name": "intent-review",
+  "name": "intent",
   "owner": {
     "name": "intent-review contributors"
   },
   "plugins": [
     {
-      "name": "intent-review",
+      "name": "intent",
       "source": "./",
       "description": "Intent spec before coding, intent-aware review before merging."
     }
