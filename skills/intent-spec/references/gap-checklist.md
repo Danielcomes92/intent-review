@@ -1,6 +1,6 @@
 # Gap checklist
 
-Walk it against the ticket and the code the task touches. A gap becomes a question only when its answer would change the implementation and nothing (ticket, linked docs, rules files, `.intent/decisions.md`) already answers it. Add the project's own recurring questions from the "Checklist" section of `.intent/decisions.md`.
+Walk it against the ticket and the code the task touches. A gap becomes a question only when its answer would change the implementation and nothing settles it: not the ticket or its comments, not a linked doc, not a rules file, not `.intent/decisions.md`, and not a fact you can verify yourself (then it is a "Verified" note, not a question). Add the project's own recurring questions from the "Checklist" section of `.intent/decisions.md`.
 
 **Who**
 - Other roles: who else can see or do this, and who must not?
@@ -27,9 +27,14 @@ Walk it against the ticket and the code the task touches. A gap becomes a questi
 - What is charged, refunded or counted, and when.
 
 **Side effects**
-- Notifications, emails, webhooks, analytics, audit logs.
+- Notifications, emails, webhooks, audit logs.
+- Analytics: events or properties the change adds, renames or stops sending, and the dashboards, funnels or reports that read them (ask their owner; never assume a lost event is fine).
 - Other flows that use the same data or code.
 - Reports and exports that will show the new data.
+
+**Removal and cleanup** (when the task removes or replaces something)
+- Everything that only existed for it: routes, deep links, types, components, assets, translation keys, analytics events, feature flags, config.
+- Who else reads it: other apps, backend, data, support articles.
 
 **Surfaces**
 - Web vs mobile; small screens; offline mode.

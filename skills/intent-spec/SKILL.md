@@ -28,22 +28,26 @@ If a tracker is not connected, say which and work with what the user pasted.
 ## Step 2 — Write the spec
 Use `references/spec-format.md`. In short:
 - **Intent** in one or two sentences.
-- **Scenarios**, 3–8, Given/When/Then, each tagged `explicit` (quotes the ticket or a linked doc) or `assumed` (your proposal, to be confirmed). Copy Gherkin already present in the ticket verbatim.
-- More than ~8 scenarios means the ticket is too big: say so and propose how to split it.
+- **Scenarios**, Given/When/Then, each tagged `explicit` (quotes the ticket or a linked doc), `decided` (settled by a project rule or a verified fact, cited) or `assumed` (your proposal, to be confirmed). Copy Gherkin already present in the ticket verbatim.
+- **Size the spec to the task.** Small task (a few lines, one screen): 1–3 scenarios. Normal task: 3–6. More than ~8 means the ticket is too big: say so and propose how to split it. Add a regression scenario only when the change touches that behaviour's code; do not list untouched behaviour "just in case". If the spec ends up heavier than the task, say so in one line.
 - Write in the language of the ticket.
 
 ## Step 3 — Find the gaps, ask only what matters
-Walk `references/gap-checklist.md` against the ticket and the code. For each gap:
-- If `.intent/decisions.md` or the rules files already answer it, apply that answer, cite it, and do not ask.
-- If the answer would not change the implementation, drop it.
-- Otherwise write a question with your proposed answer ("I'll assume X unless you say otherwise") and add the matching `assumed` scenario.
-Aim for few, sharp questions. Zero is a valid result.
+Walk `references/gap-checklist.md` against the ticket and the code. Sort every gap into exactly one bucket, in this order:
+1. **Decided**: a project rule (`CLAUDE.md` and similar), `.intent/decisions.md`, or the ticket's own comments already settle it. Apply it, cite it, and put it under "Already decided". Do not ask. (Example: a "no dead code" rule settles whether an entry point left without callers is deleted.)
+2. **Verified**: a fact you checked settles it (the translation already exists, the only caller is X, the flag is already on). Put it under "Verified" with the evidence (file:line, command or source). Do not ask.
+3. **Doesn't matter**: the answer would not change the implementation. Drop it.
+4. **Question**: only what is left. These are about intent, product or data owned by someone else. Write each with your proposed answer ("I'll assume X unless you say otherwise"), name who should answer it when it is not the ticket's author (product, data, design, another team), and add the matching `assumed` scenario.
+
+Rank the questions by what a wrong guess would cost: anything irreversible or seen outside the code (analytics events and dashboards, data deletion or migration, public APIs, billing, other teams' consumers) goes first and is marked **blocking**. Never park a blocking question as "I'll mention it in the PR". Zero questions is a valid result.
+
+**Be consistent.** When the spec removes something, it removes everything that only existed for it (routes, types, assets, translation keys, analytics events, flags), or it says explicitly why one stays and asks if that is a decision for someone else.
 
 ## Step 4 — Definition of done
 A checklist: one line per scenario (each becomes a test named after it), plus anything else the ticket requires (migration, translation, documentation, flag).
 
 ## Output
-Show the spec in the chat (Intent, Scenarios, Questions, Done). Then:
+Show the spec in the chat (Intent, Scenarios, Questions, Already decided, Verified, Out of scope, Done when). Then:
 - Offer to post it on the ticket (or do it if `--post` was given and the user approved): one comment titled **Intent spec**, so the team and `/intent-review` find it.
 - The user keeps working on the `explicit` scenarios while the questions are pending.
 
