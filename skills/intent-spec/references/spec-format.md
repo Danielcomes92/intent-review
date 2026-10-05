@@ -34,6 +34,7 @@ Then …
 
 ### Already decided
 - <decision that applies> (rule: "<quote>" CLAUDE.md:line · or .intent/decisions.md: <entry> · or ticket comment by <role>)
+<!-- Always present. When nothing applies: "None. Rules files read: CLAUDE.md, … ; .intent/decisions.md: not present." -->
 
 ### Verified
 - <fact that settles a would-be question> (evidence: file:line / command / source)
@@ -46,6 +47,7 @@ Then …
 
 Rules:
 - `explicit` scenarios quote their source; `decided` ones cite the rule or the verified fact; `assumed` ones point to the question that will confirm them.
-- Questions are only for what no rule, decision, comment or verified fact settles. Blocking ones go first and name who answers.
+- Questions are only for what no quoted rule, decision, comment or verified fact settles, plus everything owned outside the code (product, analytics/data, copy, design, legal, other teams), which is always asked. Blocking ones go first and name who answers.
+- Every claim about the code in any section is cited (`file:line` or the search run).
 - Observable results only in "Then": what a user, an API caller or the data shows, not how the code does it.
 - One behaviour per scenario. Size to the task: 1–3 for a small one, 3–6 for a normal one, more than ~8 means split the ticket.

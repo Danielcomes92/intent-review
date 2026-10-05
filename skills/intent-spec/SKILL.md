@@ -16,38 +16,44 @@ Make the task unambiguous before coding: what must be true at the end, which cas
 ## Step 0 — Is a spec worth it?
 Skip the spec, and say so in one line, when the task is trivial: a copy or style change, a dependency bump, a one-line bug with an obvious fix, or a pure refactor with no behaviour change (then the "spec" is "existing tests stay green"). For a bug, the spec is one scenario: the reproduction, as Given/When/Then.
 
-## Step 1 — Gather (read, don't invent)
-Use whatever the user has connected, in this order:
-1. The ticket: description, acceptance criteria, comments, attachments, parent / epic, linked and duplicate tickets.
-2. Documents the ticket links to (Notion, Google Docs, Confluence, design files' descriptions) and, if the project has one, the documentation section on this feature.
-3. The project's rules files (`CLAUDE.md`, `AGENTS.md`, `REVIEW.md`) and **`.intent/decisions.md`** at the repository root (decisions already taken; see `references/decisions-format.md`).
-4. The code the task will touch: enough to know the current behaviour, the data involved and who calls it. Do not design the implementation here.
+## Step 1 — Investigate (mandatory, before writing anything)
+Read and verify first; every later step depends on it. Never skip a part because a rule "probably" answers it: the rules decide nothing until you have read them and checked the facts they apply to.
 
-If a tracker is not connected, say which and work with what the user pasted.
+1. **The ticket**, through whatever the user has connected: description, acceptance criteria, **all comments**, attachments, parent / epic, linked and duplicate tickets. Documents it links to (Notion, Google Docs, Confluence, design files' descriptions) and the project's documentation on this feature, if any. If a tracker is not connected, say which and work with what the user pasted.
+2. **The rules files**: read `CLAUDE.md`, `AGENTS.md`, `REVIEW.md` and similar at the repository root and in the directories the task touches, and **`.intent/decisions.md`** (format in `references/decisions-format.md`). Keep the list of files you read; the output names them.
+3. **The code the task touches**: current behaviour, the data involved, every caller. Every factual claim the spec makes about the code ("the only entry point", "nothing else uses it", "the copy is already live") is checked and cited: `file:line`, or the search you ran and what it returned. A claim you did not verify is written as a question or as an assumption, never as a fact ("if nothing else uses it" is not allowed).
+4. **Side effects, mandatory when the task removes, renames or replaces something**: search for and list everything tied to it: analytics events and properties, translation keys, feature flags and remote config, deep links and routes, types, assets, background jobs, and anything else left orphaned. Each item ends up in the spec as removed, kept with a reason, or a question.
+
+Do not design the implementation here.
 
 ## Step 2 — Write the spec
 Use `references/spec-format.md`. In short:
 - **Intent** in one or two sentences.
-- **Scenarios**, Given/When/Then, each tagged `explicit` (quotes the ticket or a linked doc), `decided` (settled by a project rule or a verified fact, cited) or `assumed` (your proposal, to be confirmed). Copy Gherkin already present in the ticket verbatim.
+- **Scenarios**, Given/When/Then, each tagged `explicit` (quotes the ticket or a linked doc), `decided` (settled by a rule you quoted or a fact you verified, cited) or `assumed` (your proposal, to be confirmed). Copy Gherkin already present in the ticket verbatim.
 - **Size the spec to the task.** Small task (a few lines, one screen): 1–3 scenarios. Normal task: 3–6. More than ~8 means the ticket is too big: say so and propose how to split it. Add a regression scenario only when the change touches that behaviour's code; do not list untouched behaviour "just in case". If the spec ends up heavier than the task, say so in one line.
 - Write in the language of the ticket.
 
 ## Step 3 — Find the gaps, ask only what matters
-Walk `references/gap-checklist.md` against the ticket and the code. Sort every gap into exactly one bucket, in this order:
-1. **Decided**: a project rule (`CLAUDE.md` and similar), `.intent/decisions.md`, or the ticket's own comments already settle it. Apply it, cite it, and put it under "Already decided". Do not ask. (Example: a "no dead code" rule settles whether an entry point left without callers is deleted.)
-2. **Verified**: a fact you checked settles it (the translation already exists, the only caller is X, the flag is already on). Put it under "Verified" with the evidence (file:line, command or source). Do not ask.
-3. **Doesn't matter**: the answer would not change the implementation. Drop it.
-4. **Question**: only what is left. These are about intent, product or data owned by someone else. Write each with your proposed answer ("I'll assume X unless you say otherwise"), name who should answer it when it is not the ticket's author (product, data, design, another team), and add the matching `assumed` scenario.
+Walk `references/gap-checklist.md` against the ticket and what step 1 found. Sort every gap into exactly one bucket, **in this order**:
 
-Rank the questions by what a wrong guess would cost: anything irreversible or seen outside the code (analytics events and dashboards, data deletion or migration, public APIs, billing, other teams' consumers) goes first and is marked **blocking**. Never park a blocking question as "I'll mention it in the PR". Zero questions is a valid result.
+1. **Owned outside the code → always a question.** Anything product, analytics/data, copy, design, legal or another team owns is never decided silently, even if a rule or the code seems to settle it: losing or changing an analytics event, keeping or deleting translation keys or copy, a visible behaviour change the ticket does not state, data deletion, anything a dashboard, report or other team consumes. Write it as a question with your proposed answer and who should answer it.
+2. **Doesn't matter**: the answer would not change the implementation. Drop it.
+3. **Already answered**, applied last and only with evidence from step 1:
+   - a project rule you read, quoted with its location (example: a "no dead code" rule settles that a component left without callers is deleted, once you verified it has no callers);
+   - an entry in `.intent/decisions.md` or a ticket comment, quoted;
+   - a fact you verified, cited with `file:line` or the search.
+   It goes under **Already decided** (rules, decisions, comments) or **Verified** (facts), never as a question. Without a quote or a citation it is not answered: it is a question.
+4. **Question**: everything left. Each with your proposed answer ("I'll assume X unless told otherwise"), who answers it when not the ticket's author, and the matching `assumed` scenario.
 
-**Be consistent.** When the spec removes something, it removes everything that only existed for it (routes, types, assets, translation keys, analytics events, flags), or it says explicitly why one stays and asks if that is a decision for someone else.
+Rank the questions by what a wrong guess would cost: irreversible or externally visible ones (analytics and dashboards, data deletion or migration, public APIs, billing, other teams' consumers) go first and are marked **blocking**. Never park a blocking question as "I'll mention it in the PR". Zero questions is a valid result only when step 1 found nothing owned outside the code.
+
+**Be consistent.** When the spec removes something, every item from step 1.4 is removed, kept with a reason, or asked. Nothing is left orphaned silently and nothing is deferred to "a separate cleanup" without asking.
 
 ## Step 4 — Definition of done
 A checklist: one line per scenario (each becomes a test named after it), plus anything else the ticket requires (migration, translation, documentation, flag).
 
 ## Output
-Show the spec in the chat (Intent, Scenarios, Questions, Already decided, Verified, Out of scope, Done when). Then:
+Show the spec in the chat with every section of `references/spec-format.md`: Intent, Scenarios, Questions, Already decided, Verified, Out of scope, Done when. **Already decided is always present**: when nothing applies, write "None" and list the rules files you read. Then:
 - Offer to post it on the ticket (or do it if `--post` was given and the user approved): one comment titled **Intent spec**, so the team and `/intent-review` find it.
 - The user keeps working on the `explicit` scenarios while the questions are pending.
 
